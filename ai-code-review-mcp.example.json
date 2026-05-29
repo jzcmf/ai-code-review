@@ -1,0 +1,30 @@
+{
+  "providers": [
+    {
+      "id": "yuque",
+      "label": "语雀文档",
+      "transport": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "${YUQUE_PKG}"]
+      },
+      "envCheckKeys": ["YUQUE_PKG"],
+      "toolName": "yuque_get_doc_by_url"
+    },
+    {
+      "id": "tapd",
+      "label": "TAPD 需求",
+      "transport": {
+        "type": "http",
+        "url": "${TAPD_MCP_URL}"
+      },
+      "envCheckKeys": ["TAPD_MCP_URL"],
+      "fetchMode": "batchByGroup",
+      "toolName": "getStories",
+      "urlGrouping": {
+        "groupKeyRegex": "tapd\\.cn\\/[^/]*?\\/(\\d+)",
+        "itemIdRegex": "\\/(\\d{10,})(?:\\?|$)"
+      }
+    }
+  ]
+}

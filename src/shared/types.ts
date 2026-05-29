@@ -74,11 +74,6 @@ export interface RuntimeConfig {
   customRulesFilePath: string
   customRulesContent: string
   reviewMode: ReviewMode
-  mcpEnabled: boolean
-  mcpYuqueUrls: string[]
-  mcpTapdUrls: string[]
-  yuqueProxyUrl: string
-  mcpTapdUrl: string
 }
 
 export interface ReviewDataLogEntry {
@@ -94,11 +89,6 @@ export interface ReviewDataLogEntry {
     diffChars: number
   }>
   response: unknown
-}
-
-export interface McpContext {
-  yuqueUrls: string[]
-  tapdUrls: string[]
 }
 
 export interface ReviewActionDecision {

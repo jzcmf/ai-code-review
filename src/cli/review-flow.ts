@@ -6,7 +6,8 @@ import { buildSystemPrompt, buildUserPrompt } from '../context/prompt/index.js'
 import { AIReviewClient } from '../core/ai-review-client.js'
 import { buildAstBlocks } from '../context/ast/ast-extractor.js'
 import { getFileContentAtCommit, getFileDiff, getStagedFiles, isRelevantFile } from '../providers/git/git-provider.js'
-import { fetchTapdStories, fetchYuqueDocs, formatTapdContext, formatYuqueContext } from '../providers/mcp/mcp-doc-provider.js'
+import { getAvailableProviders } from '../providers/mcp/index.js'
+import { saveProviderUrls } from '../providers/mcp/config-loader.js'
 import { ANSI_COLORS, colorize, logError, logInfo, logSuccess, logWarning } from '../shared/logger.js'
 import { Spinner } from '../shared/spinner.js'
 import type { FileDiff, ReviewMode } from '../shared/types.js'
@@ -45,56 +46,76 @@ async function resolveModelForCurrentRun(aiClient: AIReviewClient): Promise<stri
 }
 
 async function loadLinkedDocs(): Promise<string> {
-  const { mcpEnabled, mcpYuqueUrls: cfgYuqueUrls, mcpTapdUrls: cfgTapdUrls, yuqueProxyUrl, mcpTapdUrl, writeDataToFile } =
-    getRuntimeConfig()
-  const yuqueAvailable = !!yuqueProxyUrl
-  const tapdAvailable = !!mcpTapdUrl
-  let mcpCtx: { yuqueUrls: string[]; tapdUrls: string[] }
+  const { writeDataToFile } = getRuntimeConfig()
 
-  if (!mcpEnabled || (!yuqueAvailable && !tapdAvailable)) {
-    mcpCtx = { yuqueUrls: [], tapdUrls: [] }
-  } else if (cfgYuqueUrls.length > 0 || cfgTapdUrls.length > 0) {
-    mcpCtx = { yuqueUrls: cfgYuqueUrls, tapdUrls: cfgTapdUrls }
-    if (cfgYuqueUrls.length > 0) logInfo(`已加载配置中的 ${cfgYuqueUrls.length} 个语雀文档 URL`)
-    if (cfgTapdUrls.length > 0) logInfo(`已加载配置中的 ${cfgTapdUrls.length} 个 TAPD URL`)
-  } else {
-    mcpCtx = process.stdin.isTTY ? await askMcpContext() : { yuqueUrls: [], tapdUrls: [] }
-  }
+  const availableProviders = getAvailableProviders()
+  if (availableProviders.length === 0) return ''
 
-  const hasMcpInput = mcpCtx.yuqueUrls.length > 0 || mcpCtx.tapdUrls.length > 0
-  let yuqueDocs: Array<{ url: string; title: string; body: string }> = []
-  let tapdStories: Array<{ id: string; name: string; description: string }> = []
-  let mcpContext = ''
-
-  if (hasMcpInput) {
-    const mcpSpinner = new Spinner('正在拉取关联文档...')
-    mcpSpinner.start()
-    try {
-      ;[yuqueDocs, tapdStories] = await Promise.all([
-        fetchYuqueDocs(mcpCtx.yuqueUrls, yuqueProxyUrl),
-        fetchTapdStories(mcpCtx.tapdUrls, mcpTapdUrl)
-      ])
-      mcpContext = [formatYuqueContext(yuqueDocs), formatTapdContext(tapdStories)].filter(Boolean).join('\n\n')
-      if (mcpContext) {
-        const parts: string[] = []
-        if (yuqueDocs.length > 0) parts.push(`${yuqueDocs.length} 篇语雀文档`)
-        if (tapdStories.length > 0) parts.push(`${tapdStories.length} 个 TAPD 需求`)
-        mcpSpinner.succeed(`关联文档加载完成（${parts.join('，')}）`)
-      } else {
-        mcpSpinner.succeed('未拉取到关联文档')
+  // Determine URL lists: config urls > env var preset > interactive prompt
+  let urlMap: Record<string, string[]>
+  const hasPresetUrls = availableProviders.some((p) => p.getPresetUrls().length > 0)
+  if (hasPresetUrls) {
+    urlMap = {}
+    for (const p of availableProviders) {
+      const urls = p.getPresetUrls()
+      if (urls.length > 0) {
+        urlMap[p.id] = urls
+        logInfo(`已加载 ${urls.length} ${p.itemLabel} URL`)
       }
-    } catch (error) {
-      mcpSpinner.fail(`关联文档加载失败：${getErrorMessage(error)}`)
-      throw error
+    }
+  } else {
+    urlMap = process.stdin.isTTY ? await askMcpContext() : {}
+    if (Object.keys(urlMap).length > 0) {
+      saveProviderUrls(urlMap)
     }
   }
 
-  if (writeDataToFile && mcpContext) {
-    writeFileSync(join(process.cwd(), 'ai-linked-docs.json'), JSON.stringify({ yuqueDocs, tapdStories }, null, 2), 'utf-8')
+  const hasUrls = Object.values(urlMap).some((urls) => urls.length > 0)
+  if (!hasUrls) return ''
+
+  const mcpSpinner = new Spinner('正在拉取关联文档...')
+  mcpSpinner.start()
+
+  const results: string[] = []
+  const rawDataMap: Record<string, unknown[]> = {}
+
+  try {
+    for (const provider of availableProviders) {
+      const urls = urlMap[provider.id]
+      if (!urls || urls.length === 0) continue
+      try {
+        const items = await provider.fetch(urls)
+        rawDataMap[provider.id] = items as unknown[]
+        if (items.length > 0) {
+          results.push(provider.format(items))
+        }
+      } catch {
+        // provider.fetch handles its own error logging
+      }
+    }
+
+    const summaryParts: string[] = []
+    for (const provider of availableProviders) {
+      const items = rawDataMap[provider.id]
+      if (items && items.length > 0) summaryParts.push(`${items.length} ${provider.itemLabel}`)
+    }
+
+    if (results.length > 0) {
+      mcpSpinner.succeed(`关联文档加载完成（${summaryParts.join('，')}）`)
+    } else {
+      mcpSpinner.succeed('未拉取到关联文档')
+    }
+  } catch (error) {
+    mcpSpinner.fail(`关联文档加载失败：${getErrorMessage(error)}`)
+    throw error
+  }
+
+  if (writeDataToFile && rawDataMap && Object.keys(rawDataMap).length > 0) {
+    writeFileSync(join(process.cwd(), 'ai-linked-docs.json'), JSON.stringify(rawDataMap, null, 2), 'utf-8')
     logInfo('关联文档已导出到 ai-linked-docs.json')
   }
 
-  return mcpContext
+  return results.join('\n\n')
 }
 
 export async function runReviewCommand(aiClient: AIReviewClient): Promise<number> {

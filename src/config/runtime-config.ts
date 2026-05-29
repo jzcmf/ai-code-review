@@ -107,18 +107,6 @@ export function getRuntimeConfig(): RuntimeConfig {
 
   const reviewMode = validateReviewMode(process.env.AI_REVIEW_MODE || '')
 
-  const mcpEnabled = process.env.AI_REVIEW_MCP_ENABLED !== 'false'
-  const mcpYuqueUrls = (process.env.AI_REVIEW_MCP_YUQUE_URLS || '')
-    .split('|')
-    .map((s) => s.trim())
-    .filter(Boolean)
-  const mcpTapdUrls = (process.env.AI_REVIEW_MCP_TAPD_URLS || '')
-    .split('|')
-    .map((s) => s.trim())
-    .filter(Boolean)
-  const yuqueProxyUrl = (process.env.__AI_REVIEW_BUILD_YUQUE_PROXY_URL || '').trim()
-  const mcpTapdUrl = (process.env.__AI_REVIEW_BUILD_MCP_TAPD_URL || '').trim()
-
   return {
     baseURL,
     fullUrl: `${baseURL.replace(/\/$/, '')}/v1/chat/completions`,
@@ -132,11 +120,6 @@ export function getRuntimeConfig(): RuntimeConfig {
     maxTotalDiffChars,
     customRulesFilePath,
     customRulesContent,
-    reviewMode,
-    mcpEnabled,
-    mcpYuqueUrls,
-    mcpTapdUrls,
-    yuqueProxyUrl,
-    mcpTapdUrl
+    reviewMode
   }
 }

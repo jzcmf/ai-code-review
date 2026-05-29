@@ -1,7 +1,8 @@
 import { stdin as input, stdout as output } from 'node:process'
 import readline from 'node:readline'
 import { logSuccess } from '../shared/logger.js'
-import type { McpContext, ReviewMode } from '../shared/types.js'
+import { getAvailableProviders } from '../providers/mcp/index.js'
+import type { ReviewMode } from '../shared/types.js'
 
 interface MenuOption<T extends string> {
   id: T
@@ -101,36 +102,39 @@ export async function askContinueMenu(promptText = '⚠️ 检测到潜在问题
   })
 }
 
-export async function askMcpContext(): Promise<McpContext> {
-  if (!process.stdin.isTTY) return { yuqueUrls: [], tapdUrls: [] }
+export async function askMcpContext(): Promise<Record<string, string[]>> {
+  if (!process.stdin.isTTY) return {}
+
+  const providers = getAvailableProviders()
+  if (providers.length === 0) return {}
 
   const rl = readline.createInterface({ input, output, terminal: true })
+  const labels = providers.map((p) => p.label).join(' / ')
   const useMcp = await new Promise<boolean>((resolve) => {
-    rl.question('\n是否带入关联文档（语雀文档 / TAPD 需求）？(y/N): ', (answer) => {
+    rl.question(`\n是否带入关联文档（${labels}）？(y/N): `, (answer) => {
       resolve(['y', 'yes'].includes(String(answer).trim().toLowerCase()))
     })
   })
   if (!useMcp) {
     rl.close()
-    return { yuqueUrls: [], tapdUrls: [] }
+    return {}
   }
 
-  const yuqueUrls = await new Promise<string[]>((resolve) => {
-    rl.question('请输入语雀文档 URL（多个用空格分隔，直接回车跳过）:\n> ', (answer) => {
-      resolve(String(answer).trim().split(/\s+/).filter(Boolean))
+  const result: Record<string, string[]> = {}
+  for (const provider of providers) {
+    const urls = await new Promise<string[]>((resolve) => {
+      rl.question(`请输入${provider.label} URL（多个用空格分隔，直接回车跳过）:\n> `, (answer) => {
+        resolve(String(answer).trim().split(/\s+/).filter(Boolean))
+      })
     })
-  })
-
-  const tapdUrls = await new Promise<string[]>((resolve) => {
-    rl.question('请输入 TAPD 需求 URL（多个用空格分隔，直接回车跳过）:\n> ', (answer) => {
-      resolve(String(answer).trim().split(/\s+/).filter(Boolean))
-    })
-  })
+    if (urls.length > 0) {
+      result[provider.id] = urls
+      logSuccess(`已录入 ${urls.length} ${provider.itemLabel} URL`)
+    }
+  }
 
   rl.close()
-  if (yuqueUrls.length > 0) logSuccess(`已录入 ${yuqueUrls.length} 个语雀文档 URL`)
-  if (tapdUrls.length > 0) logSuccess(`已录入 ${tapdUrls.length} 个 TAPD 需求 URL`)
-  return { yuqueUrls, tapdUrls }
+  return result
 }
 
 export async function askTempPrompt(): Promise<string> {

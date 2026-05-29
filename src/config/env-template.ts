@@ -62,18 +62,8 @@ AI_REVIEW_WRITE_DATA_TO_FILE=true
 # diff-ast  = 带 AST 提取出的最小包含代码块，上下文更准，但更耗 token。
 AI_REVIEW_MODE=${DEFAULT_REVIEW_MODE}
 
-# AI_REVIEW_MCP_ENABLED
-# 是否启用关联文档（语雀文档 + TAPD 需求），默认 true。
-# 关闭后跳过关联文档，不再询问语雀/TAPD。
-AI_REVIEW_MCP_ENABLED=true
-
-# AI_REVIEW_MCP_YUQUE_URLS
-# 语雀文档 URL，多个用 | 分隔。配置后可跳过每次手动输入。
-# 留空则在交互模式下每次询问。
-AI_REVIEW_MCP_YUQUE_URLS=
-
-# AI_REVIEW_MCP_TAPD_URLS
-# TAPD 需求 URL，多个用 | 分隔。配置后可跳过每次手动输入。
-# 留空则在交互模式下每次询问。
-AI_REVIEW_MCP_TAPD_URLS=
+# AI_REVIEW_MCP_CONFIG_PATH
+# MCP 配置文件路径，默认为当前目录下的 ai-code-review-mcp.json。
+# 可以是绝对路径或相对路径（相对于执行目录）。
+AI_REVIEW_MCP_CONFIG_PATH=
 `
