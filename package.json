@@ -1,0 +1,27 @@
+{
+  "name": "paykka-ai-code-review-v2",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "paykka-ai-review": "./dist/ai-review.mjs"
+  },
+  "scripts": {
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "build": "tsup",
+    "print-config": "tsx src/index.ts print-config",
+    "test-api": "tsx src/index.ts test-api",
+    "review": "tsx src/index.ts review"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.27.2",
+    "@babel/types": "^7.27.1",
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "tsup": "^8.5.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
