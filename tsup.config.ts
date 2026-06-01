@@ -9,9 +9,9 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   clean: true,
-  minify: true,
+  minify: false,
   target: 'node18',
-  noExternal: [/./],
+  external: ['@modelcontextprotocol/sdk', 'cross-spawn'],
   esbuildOptions(options) {
     options.platform = 'node'
   }

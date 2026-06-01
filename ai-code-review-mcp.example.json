@@ -4,11 +4,9 @@
       "id": "yuque",
       "label": "语雀文档",
       "transport": {
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "${YUQUE_PKG}"]
+        "type": "http",
+        "url": "语雀 MCP 服务地址"
       },
-      "envCheckKeys": ["YUQUE_PKG"],
       "toolName": "yuque_get_doc_by_url"
     },
     {
@@ -16,15 +14,14 @@
       "label": "TAPD 需求",
       "transport": {
         "type": "http",
-        "url": "${TAPD_MCP_URL}"
+        "url": "TAPD MCP 服务地址"
       },
-      "envCheckKeys": ["TAPD_MCP_URL"],
-      "fetchMode": "batchByGroup",
       "toolName": "getStories",
-      "urlGrouping": {
-        "groupKeyRegex": "tapd\\.cn\\/[^/]*?\\/(\\d+)",
-        "itemIdRegex": "\\/(\\d{10,})(?:\\?|$)"
-      }
+      "inputParsing": [
+        { "field": "workspaceId", "regex": "从 URL 提取项目 ID 的正则" },
+        { "field": "storyId", "regex": "从 URL 提取需求 ID 的正则" }
+      ],
+      "toolArgs": { "workspace_id": "${workspaceId}", "story_id": "${storyId}" }
     }
   ]
 }

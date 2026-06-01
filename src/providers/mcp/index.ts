@@ -1,5 +1,5 @@
 export type { McpProvider } from './types.js'
-export type { ProviderConfig } from './config-loader.js'
-export { saveProviderUrls } from './config-loader.js'
+export type { ProviderConfig, InputParseRule } from './config-loader.js'
+export { saveProviderInputs } from './config-loader.js'
 export { ConfigMcpProvider } from './config-mcp-provider.js'
 export { getRegisteredProviders, getAvailableProviders } from './registry.js'

@@ -1,13 +1,12 @@
 import type { ReviewMode } from '../shared/types.js'
 
-export type Command = 'review' | 'test-api' | 'print-config'
+export type Command = 'review' | 'test-api' | 'print-config' | 'mcp-list'
 
 export function resolveCommandFromArgs(argv = process.argv.slice(2)): Command {
   const firstArg = argv.find((item) => !item.startsWith('--'))
   if (!firstArg) return 'review'
-  if (firstArg === 'test-api' || firstArg === 'print-config' || firstArg === 'review') {
-    return firstArg
-  }
+  const valid: Command[] = ['review', 'test-api', 'print-config', 'mcp-list']
+  if (valid.includes(firstArg as Command)) return firstArg as Command
   return 'review'
 }
 

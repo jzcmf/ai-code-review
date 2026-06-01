@@ -11,7 +11,8 @@
     "build": "tsup",
     "print-config": "tsx src/index.ts print-config",
     "test-api": "tsx src/index.ts test-api",
-    "review": "tsx src/index.ts review"
+    "review": "tsx src/index.ts review",
+    "mcp-list": "tsx src/index.ts mcp-list"
   },
   "dependencies": {
     "@babel/parser": "^7.27.2",

@@ -1,5 +1,5 @@
 import { stdout as output } from 'node:process'
-import { logError, logInfo, logSuccess } from './logger.js'
+import { logError, logInfo, logSuccess, logWarning } from './logger.js'
 
 export class Spinner {
   private timer: ReturnType<typeof setInterval> | null = null
@@ -29,6 +29,11 @@ export class Spinner {
   succeed(message: string): void {
     this.stop()
     logSuccess(message)
+  }
+
+  warn(message: string): void {
+    this.stop()
+    logWarning(message)
   }
 
   fail(message: string): void {

@@ -7,7 +7,7 @@ import { AIReviewClient } from '../core/ai-review-client.js'
 import { buildAstBlocks } from '../context/ast/ast-extractor.js'
 import { getFileContentAtCommit, getFileDiff, getStagedFiles, isRelevantFile } from '../providers/git/git-provider.js'
 import { getAvailableProviders } from '../providers/mcp/index.js'
-import { saveProviderUrls } from '../providers/mcp/config-loader.js'
+import { saveProviderInputs } from '../providers/mcp/config-loader.js'
 import { ANSI_COLORS, colorize, logError, logInfo, logSuccess, logWarning } from '../shared/logger.js'
 import { Spinner } from '../shared/spinner.js'
 import type { FileDiff, ReviewMode } from '../shared/types.js'
@@ -66,7 +66,7 @@ async function loadLinkedDocs(): Promise<string> {
   } else {
     urlMap = process.stdin.isTTY ? await askMcpContext() : {}
     if (Object.keys(urlMap).length > 0) {
-      saveProviderUrls(urlMap)
+      saveProviderInputs(urlMap)
     }
   }
 
@@ -103,7 +103,7 @@ async function loadLinkedDocs(): Promise<string> {
     if (results.length > 0) {
       mcpSpinner.succeed(`关联文档加载完成（${summaryParts.join('，')}）`)
     } else {
-      mcpSpinner.succeed('未拉取到关联文档')
+      mcpSpinner.warn('未拉取到关联文档，请检查 MCP 配置是否正确。')
     }
   } catch (error) {
     mcpSpinner.fail(`关联文档加载失败：${getErrorMessage(error)}`)
@@ -206,7 +206,8 @@ export async function runReviewCommand(aiClient: AIReviewClient): Promise<number
   aiClient.printReviewResult(reviewResult)
 
   if (getRuntimeConfig().writeResultToFile) {
-    writeFileSync(join(process.cwd(), 'ai-review-result.txt'), reviewResult.outputText, 'utf-8')
+    const plainText = reviewResult.outputText.replace(/\x1b\[[0-9;]*m/g, '')
+    writeFileSync(join(process.cwd(), 'ai-review-result.txt'), plainText, 'utf-8')
     logInfo('审查结果已输出到 ai-review-result.txt')
   }
 

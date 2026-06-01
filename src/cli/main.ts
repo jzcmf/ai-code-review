@@ -7,13 +7,20 @@ import { logError, logInfo, logWarning } from '../shared/logger.js'
 import { resolveCommandFromArgs } from './args.js'
 import { printCurrentConfig } from './commands/print-config.js'
 import { runTestApiCommand } from './commands/test-api.js'
+import { runMcpListCommand } from './commands/mcp-list.js'
 import { runReviewCommand } from './review-flow.js'
 
 type ReviewAbortError = Error & { code?: string }
 
 export async function main(): Promise<void> {
-  const aiClient = new AIReviewClient()
   const command = resolveCommandFromArgs()
+
+  // mcp-list 不依赖 AI 配置和暂存文件，独立运行
+  if (command === 'mcp-list') {
+    process.exit(await runMcpListCommand())
+  }
+
+  const aiClient = new AIReviewClient()
   logInfo('开始执行 AI 代码审查。')
 
   const loaded = await loadLocalEnvFiles()
