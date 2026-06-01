@@ -11,7 +11,7 @@ import {
 export const DEFAULT_ENV_TEMPLATE = `# AI 代码审查配置
 
 # AI_REVIEW_BASE_URL
-# AI 接口的服务根地址，采用OpenAI API协议，自动在末尾拼接 /chat/completions。
+# AI 接口的服务根地址，采用OpenAI API协议，自动在末尾拼接 /v1/chat/completions。
 AI_REVIEW_BASE_URL=${DEFAULT_BASE_URL}
 
 # AI_REVIEW_API_KEY
