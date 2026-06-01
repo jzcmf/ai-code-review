@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { ENV_FILE_NAME, DEFAULT_CUSTOM_RULES } from './constants.js'
+import { ENV_FILE_NAME } from './constants.js'
 import { getEnvLoadState } from './env-loader.js'
 import { resolveCustomRulesFilePath, resetCustomRulesCache, setCustomRulesCache } from './runtime-config.js'
 import { logError, logSuccess, logWarning } from '../shared/logger.js'
@@ -28,7 +28,7 @@ export function validateStartupConfig(): boolean {
 
   const rulesPath = resolveCustomRulesFilePath()
   if (!rulesPath) {
-    setCustomRulesCache({ customRulesFilePath: '', customRulesContent: DEFAULT_CUSTOM_RULES })
+    setCustomRulesCache({ customRulesFilePath: '', customRulesContent: '' })
     return true
   }
   if (!fs.existsSync(rulesPath)) {
@@ -38,13 +38,12 @@ export function validateStartupConfig(): boolean {
 
   const externalRules = fs.readFileSync(rulesPath, 'utf8').trim()
   if (!externalRules) {
-    logWarning(`自定义规则文件为空：${rulesPath}，将使用内置默认规则。`)
-    setCustomRulesCache({ customRulesFilePath: rulesPath, customRulesContent: DEFAULT_CUSTOM_RULES })
+    logWarning(`自定义规则文件为空：${rulesPath}。`)
+    setCustomRulesCache({ customRulesFilePath: rulesPath, customRulesContent: '' })
     return true
   }
 
-  const mergedContent = `${DEFAULT_CUSTOM_RULES}\n\n${externalRules}`
   logSuccess(`已加载自定义规则文件：${rulesPath}`)
-  setCustomRulesCache({ customRulesFilePath: rulesPath, customRulesContent: mergedContent })
+  setCustomRulesCache({ customRulesFilePath: rulesPath, customRulesContent: externalRules })
   return true
 }

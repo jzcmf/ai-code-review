@@ -2,7 +2,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   DEFAULT_BASE_URL,
-  DEFAULT_CUSTOM_RULES,
   DEFAULT_MAX_TOKENS,
   DEFAULT_REVIEW_MODE,
   DEFAULT_TEMPERATURE,
@@ -63,19 +62,15 @@ function getCustomRulesContext(): CustomRulesContext {
   if (!rulesPath || !fs.existsSync(rulesPath)) {
     customRulesCache = {
       customRulesFilePath: rulesPath || '',
-      customRulesContent: DEFAULT_CUSTOM_RULES
+      customRulesContent: ''
     }
     return customRulesCache
   }
 
   const externalRules = fs.readFileSync(rulesPath, 'utf8').trim()
-  const mergedContent = externalRules
-    ? `${DEFAULT_CUSTOM_RULES}\n\n${externalRules}`
-    : DEFAULT_CUSTOM_RULES
-
   customRulesCache = {
     customRulesFilePath: rulesPath,
-    customRulesContent: mergedContent
+    customRulesContent: externalRules || ''
   }
   return customRulesCache
 }
@@ -113,6 +108,7 @@ export function getRuntimeConfig(): RuntimeConfig {
     defaultModel: modelCandidates.length > 0 ? modelCandidates[0] : null,
     allowOnError: process.env.AI_REVIEW_ALLOW_ON_ERROR === 'true',
     writeDataToFile: process.env.AI_REVIEW_WRITE_DATA_TO_FILE === 'true',
+    writeResultToFile: process.env.AI_REVIEW_WRITE_RESULT_TO_FILE === 'true',
     modelCandidates,
     temperature,
     maxTokens,
