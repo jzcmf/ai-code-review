@@ -50,17 +50,21 @@ MAX_FILE_DIFF_CHARS=${MAX_FILE_DIFF_CHARS}
 # 影响：超过后不会立刻失败，而是提示本次会拆成多少 chunk / unit，再决定是否继续。
 MAX_TOTAL_DIFF_CHARS=${MAX_TOTAL_DIFF_CHARS}
 
-# AI_REVIEW_WRITE_DATA_TO_FILE
-# 是否把调试数据落盘，例如原始响应、分片结果、解析日志。
-# 建议排查问题时开启；日常使用不关心调试细节时可关闭。
-AI_REVIEW_WRITE_DATA_TO_FILE=true
-
 # AI_REVIEW_MODE
 # 设置默认审查模式。
 # diff-only = 只看 diff，最省 token；
 # diff-w    = 带 Git 函数级上下文，适合常规 JS/TS；
 # diff-ast  = 带 AST 提取出的最小包含代码块，上下文更准，但更耗 token。
 AI_REVIEW_MODE=${DEFAULT_REVIEW_MODE}
+
+# AI_REVIEW_WRITE_DATA_TO_FILE
+# 是否把调试数据落盘，例如原始响应、分片结果、解析日志。
+# 建议排查问题时开启；日常使用不关心调试细节时可关闭。
+AI_REVIEW_WRITE_DATA_TO_FILE=true
+
+# AI_REVIEW_WRITE_RESULT_TO_FILE
+# 是否输出审查结果，默认输出到执行目录下的 ai-review-result.txt，文件存在则覆盖，默认关闭。
+AI_REVIEW_WRITE_RESULT_TO_FILE=false
 
 # AI_REVIEW_MCP_CONFIG_PATH
 # MCP 配置文件路径，默认为当前目录下的 ai-code-review-mcp.json。

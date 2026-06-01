@@ -195,12 +195,20 @@ export async function runReviewCommand(aiClient: AIReviewClient): Promise<number
     reviewResult = await aiClient.requestReview(fileDiffList, pickedModel, maxFileDiffChars, fileAstContexts, tempPrompt, mcpContext, reviewSpinner)
   } catch (error) {
     reviewSpinner.fail(`AI 审查失败：${getErrorMessage(error)}`)
+    if (getRuntimeConfig().writeResultToFile) {
+      writeFileSync(join(process.cwd(), 'ai-review-result.txt'), `AI 审查失败：${getErrorMessage(error)}`, 'utf-8')
+    }
     throw error
   }
 
   const issueCount = reviewResult.issues.filter((issue) => issue.file !== '参考文档').length
   reviewSpinner.succeed(issueCount === 0 ? 'AI 审查完成，未发现问题' : `AI 审查完成，发现 ${issueCount} 个问题`)
   aiClient.printReviewResult(reviewResult)
+
+  if (getRuntimeConfig().writeResultToFile) {
+    writeFileSync(join(process.cwd(), 'ai-review-result.txt'), reviewResult.outputText, 'utf-8')
+    logInfo('审查结果已输出到 ai-review-result.txt')
+  }
 
   const postReviewAction = await aiClient.resolvePostReviewAction(reviewResult)
   if (postReviewAction.allow) {

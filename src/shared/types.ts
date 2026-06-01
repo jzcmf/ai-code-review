@@ -66,6 +66,7 @@ export interface RuntimeConfig {
   defaultModel: string | null
   allowOnError: boolean
   writeDataToFile: boolean
+  writeResultToFile: boolean
   modelCandidates: string[]
   temperature: number
   maxTokens: number

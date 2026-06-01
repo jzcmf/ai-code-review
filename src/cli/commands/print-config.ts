@@ -13,6 +13,7 @@ export function printCurrentConfig(): void {
   logInfo(`MAX_TOTAL_DIFF_CHARS: ${config.maxTotalDiffChars}`)
   logInfo(`AI_REVIEW_RULES_FILE_PATH: ${config.customRulesFilePath || '(未配置)'}`)
   logInfo(`AI_REVIEW_WRITE_DATA_TO_FILE: ${config.writeDataToFile}`)
+  logInfo(`AI_REVIEW_WRITE_RESULT_TO_FILE: ${config.writeResultToFile}`)
   const providers = getRegisteredProviders()
   if (providers.length === 0) {
     logInfo('MCP: (未配置 mcp-providers.json)')
