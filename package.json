@@ -1,18 +1,33 @@
 {
-  "name": "paykka-ai-code-review-v2",
-  "version": "0.1.0",
-  "private": true,
+  "name": "paykka-ai-review",
+  "version": "1.0.0",
+  "description": "基于 AI 的 Git 暂存区代码审查 CLI 工具，commit 前自动拦截并审查代码变更",
   "type": "module",
+  "license": "MIT",
   "bin": {
-    "paykka-ai-review": "./dist/ai-review.mjs"
+    "paykka-ai-review": "./dist/paykka-ai-review.mjs"
   },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ai-code-review",
+    "code-review",
+    "git",
+    "cli",
+    "deepseek"
+  ],
   "scripts": {
     "type-check": "tsc -p tsconfig.json --noEmit",
     "build": "tsup",
     "print-config": "tsx src/index.ts print-config",
     "test-api": "tsx src/index.ts test-api",
     "review": "tsx src/index.ts review",
-    "mcp-list": "tsx src/index.ts mcp-list"
+    "mcp-list": "tsx src/index.ts mcp-list",
+    "init": "tsx src/index.ts init"
   },
   "dependencies": {
     "@babel/parser": "^7.27.2",

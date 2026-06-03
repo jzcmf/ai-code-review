@@ -2,4 +2,4 @@
 
 import { main } from './cli/main.js'
 
-void main()
+void main();

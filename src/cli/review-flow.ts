@@ -12,7 +12,7 @@ import { ANSI_COLORS, colorize, logError, logInfo, logSuccess, logWarning } from
 import { Spinner } from '../shared/spinner.js'
 import type { FileDiff, ReviewMode } from '../shared/types.js'
 import { getErrorMessage } from '../shared/errors.js'
-import { askMcpContext, askTempPrompt } from './menus.js'
+import { askTempPrompt, askUseCachedUrls, askProviderInput } from './menus.js'
 import { resolveReviewModeFromArgs } from './args.js'
 
 function collectReviewDiffs(relevantFiles: string[], mode: ReviewMode): FileDiff[] {
@@ -51,22 +51,29 @@ async function loadLinkedDocs(): Promise<string> {
   const availableProviders = getAvailableProviders()
   if (availableProviders.length === 0) return ''
 
-  // Determine URL lists: config urls > env var preset > interactive prompt
-  let urlMap: Record<string, string[]>
-  const hasPresetUrls = availableProviders.some((p) => p.getPresetUrls().length > 0)
-  if (hasPresetUrls) {
-    urlMap = {}
+  let urlMap: Record<string, string[]> = {}
+
+  if (process.stdin.isTTY) {
     for (const p of availableProviders) {
-      const urls = p.getPresetUrls()
-      if (urls.length > 0) {
-        urlMap[p.id] = urls
-        logInfo(`已加载 ${urls.length} ${p.itemLabel} URL`)
+      const cached = p.getPresetUrls()
+      if (cached.length > 0) {
+        const useCached = await askUseCachedUrls(p)
+        if (useCached) {
+          urlMap[p.id] = cached
+        } else {
+          const urls = await askProviderInput(p)
+          if (urls.length > 0) urlMap[p.id] = urls
+        }
+      } else {
+        const urls = await askProviderInput(p)
+        if (urls.length > 0) urlMap[p.id] = urls
       }
     }
+    if (Object.keys(urlMap).length > 0) saveProviderInputs(urlMap)
   } else {
-    urlMap = process.stdin.isTTY ? await askMcpContext() : {}
-    if (Object.keys(urlMap).length > 0) {
-      saveProviderInputs(urlMap)
+    for (const p of availableProviders) {
+      const urls = p.getPresetUrls()
+      if (urls.length > 0) urlMap[p.id] = urls
     }
   }
 
@@ -130,9 +137,9 @@ export async function runReviewCommand(aiClient: AIReviewClient): Promise<number
   logInfo(`暂存文件数：${colorize(stagedFiles.length, ANSI_COLORS.green)}，实际审查文件数：${colorize(relevantFiles.length, ANSI_COLORS.green)}。`)
 
   const mcpContext = await loadLinkedDocs()
+  const tempPrompt = process.stdin.isTTY ? await askTempPrompt() : ''
   const argMode = resolveReviewModeFromArgs()
   const pickedMode = process.stdin.isTTY ? await aiClient.askReviewMode(argMode ?? configMode) : argMode ?? configMode
-  const tempPrompt = process.stdin.isTTY ? await askTempPrompt() : ''
   const fileDiffList = collectReviewDiffs(relevantFiles, pickedMode)
 
   if (fileDiffList.length === 0) {

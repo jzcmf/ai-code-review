@@ -60,7 +60,7 @@ AI_REVIEW_MODE=${DEFAULT_REVIEW_MODE}
 # AI_REVIEW_WRITE_DATA_TO_FILE
 # 是否把调试数据落盘，例如原始响应、分片结果、解析日志。
 # 建议排查问题时开启；日常使用不关心调试细节时可关闭。
-AI_REVIEW_WRITE_DATA_TO_FILE=true
+AI_REVIEW_WRITE_DATA_TO_FILE=false
 
 # AI_REVIEW_WRITE_RESULT_TO_FILE
 # 是否输出审查结果，默认输出到执行目录下的 ai-review-result.txt，文件存在则覆盖，默认关闭。
@@ -70,4 +70,9 @@ AI_REVIEW_WRITE_RESULT_TO_FILE=false
 # MCP 配置文件路径，默认为当前目录下的 ai-code-review-mcp.json。
 # 可以是绝对路径或相对路径（相对于执行目录）。
 AI_REVIEW_MCP_CONFIG_PATH=
+
+# AI_REVIEW_DISABLE_BUILTIN_RULES
+# 是否禁用内置预设提示词（review-rules.mdc 中的审查行为准则和项目审查规则）。
+# 设为 true 后，仅使用 AI_REVIEW_RULES_FILE_PATH 指定的自定义规则。
+AI_REVIEW_DISABLE_BUILTIN_RULES=false
 `

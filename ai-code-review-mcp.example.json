@@ -1,27 +1,27 @@
 {
   "providers": [
     {
-      "id": "yuque",
-      "label": "语雀文档",
+      "id": "mcp1",
+      "label": "MCP1 Name",
       "transport": {
         "type": "http",
-        "url": "语雀 MCP 服务地址"
+        "url": "MCP1 服务地址"
       },
-      "toolName": "yuque_get_doc_by_url"
+      "toolName": "MCP1 Tool Name"
     },
     {
-      "id": "tapd",
-      "label": "TAPD 需求",
+      "id": "mcp2",
+      "label": "MCP2 Name",
       "transport": {
         "type": "http",
-        "url": "TAPD MCP 服务地址"
+        "url": "MCP2 服务地址"
       },
-      "toolName": "getStories",
+      "toolName": "MCP2 Tool Name",
       "inputParsing": [
-        { "field": "workspaceId", "regex": "从 URL 提取项目 ID 的正则" },
-        { "field": "storyId", "regex": "从 URL 提取需求 ID 的正则" }
+        { "field": "param1", "regex": "从 URL 提取 param1 的正则" },
+        { "field": "param2", "regex": "从 URL 提取 param2 的正则" }
       ],
-      "toolArgs": { "workspace_id": "${workspaceId}", "story_id": "${storyId}" }
+      "toolArgs": { "param1": "${param1}", "param2": "${param2}" }
     }
   ]
 }

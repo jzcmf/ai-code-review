@@ -154,18 +154,28 @@ function printTemplate(config: ProviderConfig, tools: ToolInfo[]) {
 
 // ── main ──────────────────────────────────────────────────────
 
-export async function runMcpListCommand(): Promise<number> {
+export async function runMcpListCommand(filter?: string | null): Promise<number> {
   const configs = loadProviderConfigs()
   if (configs.length === 0) {
     logError('未找到 MCP 配置。请检查 ai-code-review-mcp.json 文件。')
     return 1
   }
 
-  logInfo(`共 ${configs.length} 个 MCP Provider，开始连接并列出工具...\n`)
+  const filtered = filter
+    ? configs.filter((c) => c.id === filter)
+    : configs
+
+  if (filter && filtered.length === 0) {
+    logError(`未找到 id 为 "${filter}" 的 MCP Provider。`)
+    logInfo(`可用 Provider: ${configs.map((c) => c.id).join(', ')}`)
+    return 1
+  }
+
+  logInfo(`共 ${filtered.length} 个 MCP Provider，开始连接并列出工具...\n`)
 
   let hasError = false
 
-  for (const config of configs) {
+  for (const config of filtered) {
     console.log(`── ${config.label} (${config.id}) ──`)
     console.log(`   transport: ${config.transport.type}${config.transport.type === 'http' ? ` → ${config.transport.url}` : ` → ${config.transport.command} ${(config.transport.args || []).join(' ')}`}`)
 

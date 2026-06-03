@@ -1,7 +1,8 @@
 import { stdin as input, stdout as output } from 'node:process'
 import readline from 'node:readline'
-import { logSuccess } from '../shared/logger.js'
+import { logInfo, logSuccess } from '../shared/logger.js'
 import { getAvailableProviders } from '../providers/mcp/index.js'
+import type { McpProvider } from '../providers/mcp/types.js'
 import type { ReviewMode } from '../shared/types.js'
 
 interface MenuOption<T extends string> {
@@ -135,6 +136,36 @@ export async function askMcpContext(): Promise<Record<string, string[]>> {
 
   rl.close()
   return result
+}
+
+export async function askUseCachedUrls(provider: McpProvider): Promise<boolean> {
+  if (!process.stdin.isTTY) return true
+
+  const urls = provider.getPresetUrls()
+  logInfo(`${provider.label} 历史缓存:`)
+  for (const url of urls) {
+    logInfo(`  - ${url}`)
+  }
+
+  const rl = readline.createInterface({ input, output, terminal: true })
+  return new Promise((resolve) => {
+    rl.question(`是否沿用以上缓存？(y/N): `, (answer) => {
+      rl.close()
+      resolve(['y', 'yes'].includes(String(answer).trim().toLowerCase()))
+    })
+  })
+}
+
+export async function askProviderInput(provider: McpProvider): Promise<string[]> {
+  if (!process.stdin.isTTY) return []
+
+  const rl = readline.createInterface({ input, output, terminal: true })
+  return new Promise((resolve) => {
+    rl.question(`请输入${provider.label} URL（多个用空格分隔，直接回车跳过）:\n> `, (answer) => {
+      rl.close()
+      resolve(String(answer).trim().split(/\s+/).filter(Boolean))
+    })
+  })
 }
 
 export async function askTempPrompt(): Promise<string> {

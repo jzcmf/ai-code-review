@@ -2,3 +2,8 @@ node_modules/
 dist/
 *.log
 .env
+paykka-ai-reivew_package
+.env.ai-review
+.claude
+CLAUDE.md
+

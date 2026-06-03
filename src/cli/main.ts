@@ -4,20 +4,26 @@ import { getRuntimeConfig } from '../config/runtime-config.js'
 import { AIReviewClient } from '../core/ai-review-client.js'
 import { getErrorMessage } from '../shared/errors.js'
 import { logError, logInfo, logWarning } from '../shared/logger.js'
-import { resolveCommandFromArgs } from './args.js'
+import { resolveCommandFromArgs, resolveMcpListFilter } from './args.js'
 import { printCurrentConfig } from './commands/print-config.js'
 import { runTestApiCommand } from './commands/test-api.js'
 import { runMcpListCommand } from './commands/mcp-list.js'
 import { runReviewCommand } from './review-flow.js'
+import { runInitCommand } from './commands/init.js'
 
 type ReviewAbortError = Error & { code?: string }
 
 export async function main(): Promise<void> {
   const command = resolveCommandFromArgs()
 
+  // init 不依赖任何配置，优先处理
+  if (command === 'init') {
+    process.exit(await runInitCommand())
+  }
+
   // mcp-list 不依赖 AI 配置和暂存文件，独立运行
   if (command === 'mcp-list') {
-    process.exit(await runMcpListCommand())
+    process.exit(await runMcpListCommand(resolveMcpListFilter()))
   }
 
   const aiClient = new AIReviewClient()

@@ -14,6 +14,7 @@ export function printCurrentConfig(): void {
   logInfo(`AI_REVIEW_RULES_FILE_PATH: ${config.customRulesFilePath || '(未配置)'}`)
   logInfo(`AI_REVIEW_WRITE_DATA_TO_FILE: ${config.writeDataToFile}`)
   logInfo(`AI_REVIEW_WRITE_RESULT_TO_FILE: ${config.writeResultToFile}`)
+  logInfo(`AI_REVIEW_DISABLE_BUILTIN_RULES: ${process.env.AI_REVIEW_DISABLE_BUILTIN_RULES === 'true'}`)
   const providers = getRegisteredProviders()
   if (providers.length === 0) {
     logInfo('MCP: (未配置 mcp-providers.json)')
